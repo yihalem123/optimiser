@@ -28,6 +28,9 @@
             <li class="nav-item">
                 <a class="nav-link" id="efficientCVaRTab" data-toggle="tab" href="#efficientCVaR">Efficient CVaR</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" id="hrpTab" data-toggle="tab" href="#hrp">HRP Optimizer</a>
+            </li>
             <!-- Add more tabs for other optimization methods -->
         </ul>
         <div class="tab-content mt-3">
@@ -125,6 +128,17 @@
                     <button type="button" class="btn btn-primary" onclick="efficientCVaR()">Optimize</button>
                 </form>
                 
+            </div>
+
+            <div class="tab-pane fade" id="hrp">
+                <h2>HRP Optimization</h2>
+                <form id="hrpForm">
+                    <div class="form-group">
+                        <label for="hrpTickers">Tickers (comma-separated):</label>
+                        <input type="text" class="form-control" id="hrpTickers" name="tickers" required>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="optimizeHRP()">Optimize</button>
+                </form>
             </div>
             <div id="allocationsCard"></div>
             <!-- Add more tab panes for other optimization methods -->

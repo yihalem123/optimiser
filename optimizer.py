@@ -1,6 +1,6 @@
 import yfinance as yf
 import pandas as pd
-from pypfopt import risk_models, expected_returns, EfficientFrontier, DiscreteAllocation, objective_functions, EfficientSemivariance, EfficientCVaR
+from pypfopt import risk_models, expected_returns, EfficientFrontier, DiscreteAllocation, objective_functions, EfficientSemivariance, EfficientCVaR, HRPOpt
 
 def download_prices(tickers, period="max"):
     """Download historical prices for the given tickers."""
@@ -106,6 +106,26 @@ def efficient_cvar(prices, mu, target_cvar):
     weights = ec.clean_weights()
     print('------performance for Efficient CVaR optimization-------')
     ec.portfolio_performance(verbose=True)
+    return weights
+
+def optimize_hrp(prices):
+    """
+    Optimize portfolio using Hierarchical Risk Parity (HRP).
+    
+    Args:
+        prices (DataFrame): DataFrame containing historical prices of assets.
+    
+    Returns:
+        weights (dict): Dictionary containing the optimized weights for assets.
+    """
+    # Compute expected returns
+    rets = expected_returns.returns_from_prices(prices)
+    
+    # Optimize using HRP
+    hrp = HRPOpt(rets)
+    hrp.optimize()
+    weights = hrp.clean_weights()
+    
     return weights
 
 

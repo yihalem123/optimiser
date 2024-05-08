@@ -141,3 +141,33 @@ function efficientCVaR() {
 
     });
 }
+
+function optimizeHRP() {
+    // Get form data
+    var tickers = document.getElementById("hrpTickers").value;
+
+    // Prepare payload
+    var payload = {
+        tickers: tickers.split(",").map(function(item) {
+            return item.trim();
+        })
+    };
+
+    // Send POST request to API endpoint
+    fetch("http://127.0.0.1:5000/optimize_hrp", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Display allocations card
+        displayAllocations(data);
+    })
+    .catch(error => {
+        console.error("Error:", error);
+    });
+}
+

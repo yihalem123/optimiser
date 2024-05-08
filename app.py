@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from optimizer import download_prices, optimize_min_volatility, max_sharpe_with_sector_constraints, get_expected_returns, perform_discrete_allocation, maximize_return_given_risk, minimize_risk_given_return, efficient_semivariance, efficient_cvar
+from optimizer import download_prices, optimize_min_volatility, max_sharpe_with_sector_constraints, get_expected_returns, perform_discrete_allocation, maximize_return_given_risk, minimize_risk_given_return, efficient_semivariance, efficient_cvar, optimize_hrp 
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -156,6 +156,39 @@ def efficient_cvar_endpoint():
         "allocations": allocations,
         "leftover": leftover
     }
+    return jsonify(response)
+
+@app.route('/optimize_hrp', methods=['POST'])
+def optimize_hrp_endpoint():
+    """
+    Endpoint to optimize portfolio using Hierarchical Risk Parity (HRP).
+    Expects a JSON request containing tickers and total_portfolio_value.
+    Returns the optimized weights, allocations, and leftover funds.
+    """
+    # Get JSON data from request
+    
+    
+    # Extract tickers and total portfolio value from JSON data
+    tickers = request.json.get('tickers')
+    total_portfolio_value = request.json.get('total_portfolio_value', 10000)
+    
+    # Download historical prices
+    prices = download_prices(tickers)
+    
+    # Optimize portfolio using HRP
+    weights = optimize_hrp(prices)
+    
+    # Perform discrete allocation
+    allocations, leftover = perform_discrete_allocation(weights, prices, total_portfolio_value=total_portfolio_value)
+    
+    # Prepare response
+    response = {
+        "weights": weights,
+        "allocations": allocations,
+        "leftover": leftover
+    }
+    
+    # Return response as JSON
     return jsonify(response)
 
 if __name__ == '__main__':
