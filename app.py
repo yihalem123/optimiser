@@ -54,7 +54,10 @@ def optimize_portfolio():
         "leftover": leftover
     }
     return jsonify(response)
-
+@app.route('/')
+def hello_world():
+    return 'Hello, World!'
+    
 @app.route('/optimize_min_volatility', methods=['POST'])
 def optimize_min_volatility_endpoint():
     tickers = request.json.get('tickers')
