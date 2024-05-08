@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Optimization</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Portfolio Optimization</h1>
+        <ul class="nav nav-tabs mt-3" id="optimizationTabs">
+            <li class="nav-item">
+                <a class="nav-link active" id="minVolatilityTab" data-toggle="tab" href="#minVolatility">Minimize Volatility</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="maxSharpeTab" data-toggle="tab" href="#maxSharpe">Maximize Sharpe Ratio</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="maximizeReturnGivenRiskTab" data-toggle="tab" href="#maximizeReturnGivenRisk">Maximize Return Given Risk</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="minimizeRiskGivenReturnTab" data-toggle="tab" href="#minimizeRiskGivenReturn">Minimize Risk Given Return</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="efficientSemivarianceTab" data-toggle="tab" href="#efficientSemivariance">Efficient Semivariance</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="efficientCVaRTab" data-toggle="tab" href="#efficientCVaR">Efficient CVaR</a>
+            </li>
+            <!-- Add more tabs for other optimization methods -->
+        </ul>
+        <div class="tab-content mt-3">
+            <div class="tab-pane fade show active" id="minVolatility">
+                <h2>Minimize Volatility</h2>
+                <form id="minVolatilityForm">
+                    <div class="form-group">
+                        <label for="minVolatilityTickers">Tickers (comma-separated):</label>
+                        <input type="text" class="form-control" id="minVolatilityTickers" name="tickers" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="minVolatilityTotalPortfolioValue">Total Portfolio Value:</label>
+                        <input type="number" class="form-control" id="minVolatilityTotalPortfolioValue" name="totalPortfolioValue" required>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="optimizeMinVolatility()">Optimize</button>
+                </form>
+                
+            </div>
+
+            <div class="tab-pane fade" id="maxSharpe">
+                <h2>Maximize Sharpe Ratio</h2>
+                <form id="maxSharpeForm">
+                    <div class="form-group">
+                        <label for="maxSharpeTickers">Tickers (comma-separated):</label>
+                        <input type="text" class="form-control" id="maxSharpeTickers" name="tickers" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="maxSharpeTotalPortfolioValue">Total Portfolio Value:</label>
+                        <input type="number" class="form-control" id="maxSharpeTotalPortfolioValue" name="totalPortfolioValue" required>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="optimizeMaxSharpe()">Optimize</button>
+                </form>
+                
+            </div>
+
+            <div class="tab-pane fade" id="maximizeReturnGivenRisk">
+                <h2>Maximize Return Given Risk</h2>
+                <form id="maximizeReturnGivenRiskForm">
+                    <div class="form-group">
+                        <label for="maximizeReturnGivenRiskTickers">Tickers (comma-separated):</label>
+                        <input type="text" class="form-control" id="maximizeReturnGivenRiskTickers" name="tickers" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="maximizeReturnGivenRiskTargetVolatility">Target Volatility:</label>
+                        <input type="number" class="form-control" id="maximizeReturnGivenRiskTargetVolatility" name="targetVolatility" required>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="maximizeReturnGivenRisk()">Optimize</button>
+                </form>
+              
+            </div>
+
+            <div class="tab-pane fade" id="minimizeRiskGivenReturn">
+                <h2>Minimize Risk Given Return</h2>
+                <form id="minimizeRiskGivenReturnForm">
+                    <div class="form-group">
+                        <label for="minimizeRiskGivenReturnTickers">Tickers (comma-separated):</label>
+                        <input type="text" class="form-control" id="minimizeRiskGivenReturnTickers" name="tickers" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="minimizeRiskGivenReturnTargetReturn">Target Return:</label>
+                        <input type="number" class="form-control" id="minimizeRiskGivenReturnTargetReturn" name="targetReturn" required>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="minimizeRiskGivenReturn()">Optimize</button>
+                </form>
+                
+            </div>
+
+            <div class="tab-pane fade" id="efficientSemivariance">
+                <h2>Efficient Semivariance</h2>
+                <form id="efficientSemivarianceForm">
+                    <div class="form-group">
+                        <label for="efficientSemivarianceTickers">Tickers (comma-separated):</label>
+                        <input type="text" class="form-control" id="efficientSemivarianceTickers" name="tickers" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="efficientSemivarianceBenchmark">Target Return:</label>
+                        <input type="number" class="form-control" id="efficientSemivarianceBenchmark" name="targetReturn" required>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="efficientSemivariance()">Optimize</button>
+                </form>
+                
+            </div>
+
+            <div class="tab-pane fade" id="efficientCVaR">
+                <h2>Efficient CVaR</h2>
+                <form id="efficientCVaRForm">
+                    <div class="form-group">
+                        <label for="efficientCVaRTickers">Tickers (comma-separated):</label>
+                        <input type="text" class="form-control" id="efficientCVaRTickers" name="tickers" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="efficientCVaRTargetCVaR">Target CVaR:</label>
+                        <input type="number" class="form-control" id="efficientCVaRTargetCVaR" name="targetCVaR" required>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="efficientCVaR()">Optimize</button>
+                </form>
+                
+            </div>
+            <div id="allocationsCard"></div>
+            <!-- Add more tab panes for other optimization methods -->
+
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

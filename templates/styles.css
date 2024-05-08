@@ -1,0 +1,46 @@
+/* styles.css */
+
+/* Style the tab buttons */
+.tablinks {
+    background-color: #f2f2f2;
+    border: 1px solid #ccc;
+    border-bottom: none;
+    cursor: pointer;
+    padding: 10px 20px;
+    transition: background-color 0.3s;
+}
+
+/* Change background color of active tab */
+.tablinks.active {
+    background-color: #ddd;
+}
+
+/* Style the tab content */
+.tabcontent {
+    display: none;
+    padding: 20px;
+    border-top: 1px solid #ccc;
+}
+
+/* Style the container */
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+h1 {
+    text-align: center;
+}
+
+/* Hide radio buttons */
+input[type="radio"] {
+    display: none;
+}
+
+/* Show tab content when radio button is checked */
+input[type="radio"]:checked + label + .tabcontent {
+    display: block;
+}
