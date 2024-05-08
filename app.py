@@ -37,7 +37,9 @@ sector_upper = {
     "Auto":0.15
 }
 
-
+@app.route('/')
+def hello_world():
+    return 'Hello, World!'
 
 @app.route('/optimize_portfolio', methods=['POST'])
 def optimize_portfolio():
