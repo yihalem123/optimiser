@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify
 from optimizer import download_prices, optimize_min_volatility, max_sharpe_with_sector_constraints, get_expected_returns, perform_discrete_allocation, maximize_return_given_risk, minimize_risk_given_return, efficient_semivariance, efficient_cvar, optimize_hrp 
 from flask_cors import CORS
+from math import isnan
+  
 
 app = Flask(__name__)
 CORS(app)
@@ -47,7 +49,7 @@ def optimize_portfolio():
     total_portfolio_value = request.json.get('total_portfolio_value')
     
     prices = download_prices(tickers)
-    weights = optimize_min_volatility(prices)
+    weights, _ = optimize_min_volatility(prices)
     allocations, leftover = perform_discrete_allocation(weights, prices, total_portfolio_value=total_portfolio_value)
     
     response = {
@@ -57,21 +59,24 @@ def optimize_portfolio():
     }
     return jsonify(response)
 
-    
 @app.route('/optimize_min_volatility', methods=['POST'])
 def optimize_min_volatility_endpoint():
     tickers = request.json.get('tickers')
     total_portfolio_value = request.json.get('total_portfolio_value')
     
     prices = download_prices(tickers)
-    weights = optimize_min_volatility(prices)
+    weights, performance_data = optimize_min_volatility(prices)
     allocations, leftover = perform_discrete_allocation(weights, prices, total_portfolio_value=total_portfolio_value)
-    
+    performance_data = performance_data['MVO']
+    performance_data = {key: value if not isnan(value) else None for key, value in performance_data.items()}
     response = {
         "weights": weights,
         "allocations": allocations,
-        "leftover": leftover
+        "leftover": leftover,
+        "performance": performance_data
+ 
     }
+    print(performance_data)
     return jsonify(response)
 
 @app.route('/max_sharpe_with_sector_constraints', methods=['POST'])
@@ -80,13 +85,16 @@ def max_sharpe_with_sector_constraints_endpoint():
     total_portfolio_value = request.json.get('total_portfolio_value', 10000)
     
     prices = download_prices(tickers)
-    weights = max_sharpe_with_sector_constraints(prices, sector_mapper, sector_lower, sector_upper)
+    weights, performance_data = max_sharpe_with_sector_constraints(prices, sector_mapper, sector_lower, sector_upper)
     allocations, leftover = perform_discrete_allocation(weights, prices, total_portfolio_value=total_portfolio_value)
-    
+    performance_data = performance_data['MVO']
+    performance_data = {key: value if not isnan(value) else None for key, value in performance_data.items()}
+
     response = {
         "weights": weights,
         "allocations": allocations,
-        "leftover": leftover
+        "leftover": leftover,
+        "performance": performance_data
     }
     return jsonify(response)
 
@@ -96,13 +104,16 @@ def maximize_return_given_risk_endpoint():
     target_volatility = request.json.get('target_volatility')
     total_portfolio_value = request.json.get('total_portfolio_value', 10000)
     prices = download_prices(tickers)
-    weights = maximize_return_given_risk(prices, target_volatility)
+    weights, performance_data = maximize_return_given_risk(prices, target_volatility)
     allocations, leftover = perform_discrete_allocation(weights, prices, total_portfolio_value=total_portfolio_value)
-    
+    performance_data = performance_data['MVO']
+    performance_data = {key: value if not isnan(value) else None for key, value in performance_data.items()}
+
     response = {
         "weights": weights,
         "allocations": allocations,
-        "leftover": leftover
+        "leftover": leftover,
+        "performance": performance_data
     }
     return jsonify(response)
 
@@ -113,13 +124,16 @@ def minimize_risk_given_return_endpoint():
     total_portfolio_value = request.json.get('total_portfolio_value', 10000)
 
     prices = download_prices(tickers)
-    weights = minimize_risk_given_return(prices, target_return)
+    weights, performance_data = minimize_risk_given_return(prices, target_return)
     allocations, leftover = perform_discrete_allocation(weights, prices, total_portfolio_value=total_portfolio_value)
-    
+    performance_data = performance_data['MVO']
+    performance_data = {key: value if not isnan(value) else None for key, value in performance_data.items()}
+
     response = {
         "weights": weights,
         "allocations": allocations,
-        "leftover": leftover
+        "leftover": leftover,
+        "performance":performance_data
     }
     return jsonify(response)
 
@@ -132,13 +146,16 @@ def efficient_semivariance_endpoint():
     prices = download_prices(tickers)
     mu = get_expected_returns(prices)
 
-    weights = efficient_semivariance(prices,mu,  benchmark=target_return)
+    weights, performance_data = efficient_semivariance(prices,mu,  benchmark=target_return)
     allocations, leftover = perform_discrete_allocation(weights, prices, total_portfolio_value=total_portfolio_value)
-    
+    performance_data = performance_data['MVO']
+    performance_data = {key: value if not isnan(value) else None for key, value in performance_data.items()}
+
     response = {
         "weights": weights,
         "allocations": allocations,
-        "leftover": leftover
+        "leftover": leftover,
+        "performance":performance_data
     }
     return jsonify(response)
 
@@ -151,13 +168,16 @@ def efficient_cvar_endpoint():
     prices = download_prices(tickers)
     mu = get_expected_returns(prices)
 
-    weights = efficient_cvar(prices,mu,  target_cvar=target_cvar)
+    weights, performance_data = efficient_cvar(prices,mu,  target_cvar=target_cvar)
     allocations, leftover = perform_discrete_allocation(weights, prices,  total_portfolio_value=total_portfolio_value)
-    
+    performance_data = performance_data['MVO']
+    performance_data = {key: value if not isnan(value) else None for key, value in performance_data.items()}
+
     response = {
         "weights": weights,
         "allocations": allocations,
-        "leftover": leftover
+        "leftover": leftover,
+        "performance": performance_data
     }
     return jsonify(response)
 

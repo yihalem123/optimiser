@@ -21,8 +21,12 @@ def optimize_min_volatility(prices):
     weights = ef.clean_weights()
     print('------performance for min_volatility_optimized_portfolio-----')
     ef.portfolio_performance(verbose=True)
+    portfolio_performance = pd.DataFrame(ef.portfolio_performance(risk_free_rate=0), 
+                                     index = ["Expected annual return", "Annual volatility", "Sharpe Ratio"],
+                                     columns = ["MVO"])
+    performance_data = portfolio_performance.to_dict()
 
-    return  weights
+    return  weights, performance_data
 
 def perform_discrete_allocation(weights, prices, total_portfolio_value:1000, short_ratio=0.3):
     """Perform discrete allocation based on optimized weights."""
@@ -31,13 +35,14 @@ def perform_discrete_allocation(weights, prices, total_portfolio_value:1000, sho
     alloc, leftover = da.lp_portfolio()
     allocations = {}
     for asset, shares in alloc.items():
-        if shares > 0:
-            action = "buy"
+        action = "buy" if shares > 0 else "sell"
+        shares = abs(shares)  # Convert negative shares to positive for verbal output
+        if asset in allocations:
+            allocations[asset] = f"{action} {shares} shares of {asset}"
         else:
-            action = "sell"
-            shares = abs(shares)  # Convert negative shares to positive for verbal output
-        allocations[asset] = f"{action} {shares} shares of {asset}"
-    print(f"leftover: {leftover}")
+            allocations[asset] = f"{action} {shares} shares of {asset}"
+#    print(f"leftover: {leftover}")
+    print(allocations)
     return allocations, leftover
 
 def max_sharpe_with_sector_constraints(prices, sector_mapper, sector_lower, sector_upper):
@@ -53,7 +58,11 @@ def max_sharpe_with_sector_constraints(prices, sector_mapper, sector_lower, sect
     print('-----performance for Maximum Sharperatio optimised portfolios-----')
     print("")
     ef.portfolio_performance(verbose=True)
-    return weights
+    portfolio_performance = pd.DataFrame(ef.portfolio_performance(risk_free_rate=0), 
+                                     index = ["Expected annual return", "Annual volatility", "Sharpe Ratio"],
+                                     columns = ["MVO"])
+    performance_data = portfolio_performance.to_dict()
+    return weights, performance_data
 
 def maximize_return_given_risk(prices, target_volatility):
     """Maximize return for a given risk, with L2 regularization."""
@@ -67,7 +76,11 @@ def maximize_return_given_risk(prices, target_volatility):
     print("-----Performance for Maximised return for a given risk Optimised Portfolio-----")
 
     ef.portfolio_performance(verbose=True)
-    return weights
+    portfolio_performance = pd.DataFrame(ef.portfolio_performance(risk_free_rate=0), 
+                                     index = ["Expected annual return", "Annual volatility", "Sharpe Ratio"],
+                                     columns = ["MVO"])
+    performance_data = portfolio_performance.to_dict()
+    return weights, performance_data
 
 def minimize_risk_given_return(prices, target_return, market_neutral=True):
     """Minimize risk for a given return, market-neutral."""
@@ -80,7 +93,11 @@ def minimize_risk_given_return(prices, target_return, market_neutral=True):
     weights = ef.clean_weights()
     print('------Performance for minimised risk for given return optimised Portfolio-----')
     ef.portfolio_performance(verbose=True)
-    return weights
+    portfolio_performance = pd.DataFrame(ef.portfolio_performance(risk_free_rate=0), 
+                                     index = ["Expected annual return", "Annual volatility", "Sharpe Ratio"],
+                                     columns = ["MVO"])
+    performance_data = portfolio_performance.to_dict()
+    return weights, performance_data
 
 def efficient_semivariance(prices, mu, benchmark=0, target_return=None):
     """Efficient semi-variance optimization."""
@@ -95,7 +112,11 @@ def efficient_semivariance(prices, mu, benchmark=0, target_return=None):
     weights = es.clean_weights()
     print('-----performance for efficient semivarience optimised portfolios------')
     es.portfolio_performance(verbose=True)
-    return weights
+    portfolio_performance = pd.DataFrame(es.portfolio_performance(risk_free_rate=0), 
+                                     index = ["Expected annual return", "Annual semi-deviation", "Sortino Ratio"],
+                                     columns = ["MVO"])
+    performance_data = portfolio_performance.to_dict()
+    return weights,performance_data
 
 def efficient_cvar(prices, mu, target_cvar):
     """Efficient CVaR optimization."""
@@ -106,7 +127,11 @@ def efficient_cvar(prices, mu, target_cvar):
     weights = ec.clean_weights()
     print('------performance for Efficient CVaR optimization-------')
     ec.portfolio_performance(verbose=True)
-    return weights
+    portfolio_performance = pd.DataFrame(ec.portfolio_performance(), 
+                                     index = ["Expected annual return", "Conditional Value at Risk"],
+                                     columns = ["MVO"])
+    performance_data = portfolio_performance.to_dict()
+    return weights, performance_data
 
 def optimize_hrp(prices):
     """
@@ -125,6 +150,10 @@ def optimize_hrp(prices):
     hrp = HRPOpt(rets)
     hrp.optimize()
     weights = hrp.clean_weights()
+    portfolio_performance = pd.DataFrame(hrp.portfolio_performance(risk_free_rate=0), 
+                                     index = ["Expected annual return", "Annual volatility", "Sharpe Ratio"],
+                                     columns = ["MVO"])
+    performance_data = portfolio_performance.to_dict()
     
     return weights
 
