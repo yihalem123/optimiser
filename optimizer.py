@@ -155,7 +155,7 @@ def optimize_hrp(prices):
                                      columns = ["MVO"])
     performance_data = portfolio_performance.to_dict()
     
-    return weights
+    return weights, performance_data
 
 
 # Download historical prices

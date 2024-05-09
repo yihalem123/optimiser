@@ -199,16 +199,18 @@ def optimize_hrp_endpoint():
     prices = download_prices(tickers)
     
     # Optimize portfolio using HRP
-    weights = optimize_hrp(prices)
+    weights, performance_data = optimize_hrp(prices)
     
     # Perform discrete allocation
     allocations, leftover = perform_discrete_allocation(weights, prices, total_portfolio_value=total_portfolio_value)
-    
+    performance_data = performance_data['MVO']
+    performance_data = {key: value if not isnan(value) else None for key, value in performance_data.items()}
     # Prepare response
     response = {
         "weights": weights,
         "allocations": allocations,
-        "leftover": leftover
+        "leftover": leftover,
+        "performance": performance_data
     }
     
     # Return response as JSON
