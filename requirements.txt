@@ -1,5 +1,9 @@
+gunicorn
+flask
+Flask-Cors
 pandas
 numpy
 matplotlib
 yfinance
 PyPortfolioOpt
+
