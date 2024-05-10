@@ -11,23 +11,23 @@ function displayAllocations(data) {
     let performanceText = '';
     if (performance_data) {
         if ('Expected annual return' in performance_data && performance_data['Expected annual return'] !== null) {
-            performanceText += `<p class="card-text">Expected Annual Return: ${performance_data['Expected annual return'].toFixed(2)}%</p>`;
+            performanceText += `<p class="card-text">Expected Annual Return: ${performance_data['Expected annual return'].toFixed(2)* 100}%</p>`;
         }
         if ('Sharpe Ratio' in performance_data && performance_data['Sharpe Ratio'] !== null) {
             performanceText += `<p class="card-text">Sharpe Ratio: ${performance_data['Sharpe Ratio'].toFixed(2)}</p>`;
         }
 
         if ('Conditional Value at Risk' in performance_data && performance_data['Conditional Value at Risk'] !== null) {
-            performanceText += `<p class="card-text">Conditional Value at Risk: ${performance_data['Conditional Value at Risk'].toFixed(2)}</p>`;
+            performanceText += `<p class="card-text">Conditional Value at Risk: ${performance_data['Conditional Value at Risk'].toFixed(2)* 100}%</p>`;
         }
         if ('Annual semi-deviation' in performance_data && performance_data['Annual semi-deviation'] !== null) {
-            performanceText += `<p class="card-text">Annual Semi-Deviation: ${performance_data['Annual semi-deviation'].toFixed(2)}</p>`;
+            performanceText += `<p class="card-text">Annual Semi-Deviation: ${performance_data['Annual semi-deviation'].toFixed(2)* 100}%</p>`;
         }
         if ('Sortino Ratio' in performance_data && performance_data['Sortino Ratio'] !== null) {
             performanceText += `<p class="card-text">Sortino Ratio: ${performance_data['Sortino Ratio'].toFixed(2)}</p>`;
         }
         if ('Annual volatility' in performance_data && performance_data['Annual volatility'] !== null) {
-            performanceText += `<p class="card-text">Annual Volatility: ${performance_data['Annual volatility'].toFixed(2)}</p>`;
+            performanceText += `<p class="card-text">Annual Volatility: ${performance_data['Annual volatility'].toFixed(2)* 100}%</p>`;
         }
         // Add additional checks for other performance metrics here
     }
