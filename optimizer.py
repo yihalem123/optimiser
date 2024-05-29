@@ -14,6 +14,8 @@ def download_prices(tickers, start_date="2000-01-01", end_date="2023-01-01"):
     # Reindex to ensure consistent date range across all tickers
     all_dates = pd.date_range(start=start_date, end=end_date, freq='B')  # 'B' frequency is for business days
     prices = prices.reindex(all_dates)
+    prices = prices.ffill().bfill()
+
     
     return prices
 
