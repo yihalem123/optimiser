@@ -7,11 +7,14 @@ def download_prices(tickers, start_date="2000-01-01", end_date="2023-01-01"):
     prices = pd.DataFrame()
     
     for ticker in tickers:
-        # Download data for each ticker
-        data = yf.download(ticker, start=start_date, end=end_date)
-        
-        # Use the adjusted close price
-        prices[ticker] = data['Adj Close']
+        try:
+            # Download data for each ticker
+            data = yf.download(ticker, start=start_date, end=end_date)
+            
+            # Use the adjusted close price
+            prices[ticker] = data['Adj Close']
+        except Exception as e:
+            print(f"Failed to download data for {ticker}: {e}")
     
     # Reindex to ensure consistent date range across all tickers
     all_dates = pd.date_range(start=start_date, end=end_date, freq='B')  # 'B' frequency is for business days
