@@ -5,17 +5,20 @@ from yahoo_fin import stock_info as si
  
 def download_prices(tickers, start_date="2000-01-01", end_date="2023-01-01"):
     prices = pd.DataFrame()
-
+    
     for ticker in tickers:
-        data = si.get_data(ticker, start_date=start_date, end_date=end_date)
-        data.index = pd.to_datetime(data.index)
-        prices[ticker] = data['adjclose']
+        # Download data for each ticker
+        data = yf.download(ticker, start=start_date, end=end_date)
         
+        # Use the adjusted close price
+        prices[ticker] = data['Adj Close']
+    
     # Reindex to ensure consistent date range across all tickers
     all_dates = pd.date_range(start=start_date, end=end_date, freq='B')  # 'B' frequency is for business days
     prices = prices.reindex(all_dates)
+    
+    # Forward-fill and back-fill any missing data
     prices = prices.ffill().bfill()
-
     
     return prices
 
