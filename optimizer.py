@@ -1,11 +1,15 @@
 import yfinance as yf
 import pandas as pd
 from pypfopt import risk_models, expected_returns, EfficientFrontier, DiscreteAllocation, objective_functions, EfficientSemivariance, EfficientCVaR, HRPOpt
-
-def download_prices(tickers, period="max"):
-    """Download historical prices for the given tickers."""
-    ohlc = yf.download(tickers, period=period)
-    prices = ohlc["Adj Close"].dropna(how="all")
+from yahoo_fin import stock_info as si
+ 
+def download_prices(tickers, start_date="2000-01-01", end_date="2023-01-01"):
+    prices = pd.DataFrame()
+    
+    for ticker in tickers:
+        data = si.get_data(ticker, start_date=start_date, end_date=end_date)
+        prices[ticker] = data['adjclose']
+    
     return prices
 
 def get_expected_returns(prices):
