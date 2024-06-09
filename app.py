@@ -132,29 +132,60 @@ def max_sharpe_with_sector_constraints_endpoint():
 
 @app.route('/maximize_return_given_risk', methods=['POST'])
 def maximize_return_given_risk_endpoint():
-    tickers = request.json.get('tickers')
-    target_volatility = request.json.get('target_volatility')
-    total_portfolio_value = request.json.get('total_portfolio_value', 10000)
+    try:
+        # Extract tickers, target volatility, and total portfolio value from JSON data
+        tickers = request.json.get('tickers')
+        target_volatility = request.json.get('target_volatility')
+        total_portfolio_value = request.json.get('total_portfolio_value', 10000)
+        
+        # Download historical prices
+        prices, valid_tickers, errors = download_prices(tickers)
+        
+        response = {}
+        if valid_tickers:
+            valid_prices = prices[valid_tickers]
+            try:
+                # Optimize portfolio given the target volatility
+                weights, performance_data = maximize_return_given_risk(valid_prices, target_volatility)
+                
+                # Perform discrete allocation
+                allocations, leftover = perform_discrete_allocation(weights, valid_prices, total_portfolio_value=total_portfolio_value)
+                performance_data = performance_data['MVO']
+                performance_data = {key: value if not isnan(value) else None for key, value in performance_data.items()}
+                
+                # Prepare response
+                response = {
+                    "weights": weights,
+                    "allocations": allocations,
+                    "leftover": leftover,
+                    "performance": performance_data,
+                    "errors": errors
+                }
+            except ValueError as ve:
+                # Handle specific ValueError from optimization function
+                response = {
+                    "weights": {},
+                    "allocations": {},
+                    "leftover": 0,
+                    "performance": {},
+                    "errors": errors,
+                    "message": str(ve)
+                }
+        else:
+            weights, allocations, leftover, performance_data = {}, {}, 0, {}
+            response = {
+                "weights": weights,
+                "allocations": allocations,
+                "leftover": leftover,
+                "performance": performance_data,
+                "errors": errors
+            }
 
-    prices, valid_tickers, errors = download_prices(tickers)
+        # Return response as JSON
+        return jsonify(response)
     
-    if valid_tickers:
-        valid_prices = prices[valid_tickers]
-        weights, performance_data = maximize_return_given_risk(valid_prices, target_volatility)
-        allocations, leftover = perform_discrete_allocation(weights, valid_prices, total_portfolio_value=total_portfolio_value)
-        performance_data = performance_data['MVO']
-        performance_data = {key: value if not isnan(value) else None for key, value in performance_data.items()}
-    else:
-        weights, allocations, leftover, performance_data = {}, {}, 0, {}
-
-    response = {
-        "weights": weights,
-        "allocations": allocations,
-        "leftover": leftover,
-        "performance": performance_data,
-        "errors": errors
-    }
-    return jsonify(response)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/minimize_risk_given_return', methods=['POST'])
 def minimize_risk_given_return_endpoint():

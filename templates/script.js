@@ -129,11 +129,33 @@ function maximizeReturnGivenRisk() {
         },
         body: JSON.stringify({ tickers: tickers, target_volatility: targetVolatility })
     })
-    .then(response => response.json())
-    .then(data => {
-        displayAllocations(data);
 
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("Failed to fetch data. Status: " + response.status);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.message) {
+            // Display error message on the frontend
+            displayErrorMessage(data.message);
+        } else {
+            // Process and display data as usual
+            displayAllocations(data);
+            console.log(data);
+        }
+    })
+    .catch(error => {
+        // Handle generic error (e.g., network issues)
+        displayErrorMessage("An error occurred: " + error.message);
     });
+}
+
+function displayErrorMessage(message) {
+    // Display the error message on the frontend (e.g., in a div with id="error-message")
+    document.getElementById("error-message").innerText = message;
+    document.getElementById("error-message").style.display = "block";
 }
 
 function minimizeRiskGivenReturn() {
