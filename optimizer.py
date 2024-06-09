@@ -5,16 +5,19 @@ from yahoo_fin import stock_info as si
  
 def download_prices(tickers, start_date="2000-01-01", end_date="2023-01-01"):
     prices = pd.DataFrame()
-    
+    errors = {}
     for ticker in tickers:
         try:
             # Download data for each ticker
             data = yf.download(ticker, start=start_date, end=end_date)
-            
+            if data.empty:
+                raise ValueError(f"No data found for {ticker}")            
             # Use the adjusted close price
             prices[ticker] = data['Adj Close']
         except Exception as e:
             print(f"Failed to download data for {ticker}: {e}")
+            errors[ticker] = f"Error: {e}"  # Store error message in the dictionary
+
     
     # Reindex to ensure consistent date range across all tickers
     all_dates = pd.date_range(start=start_date, end=end_date, freq='B')  # 'B' frequency is for business days
@@ -22,9 +25,11 @@ def download_prices(tickers, start_date="2000-01-01", end_date="2023-01-01"):
     
     # Forward-fill and back-fill any missing data
     prices = prices.ffill().bfill()
-    
-    return prices
+    valid_prices = prices.dropna(axis=1)
+    valid_tickers = valid_prices.columns.tolist()
 
+
+    return valid_prices,valid_tickers, errors
 def get_expected_returns(prices):
     """Compute expected returns using CAPM."""
     mu = expected_returns.capm_return(prices)

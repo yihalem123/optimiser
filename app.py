@@ -43,19 +43,31 @@ sector_upper = {
 def hello_world():
     return 'Hello, World!'
 
+
+
 @app.route('/optimize_portfolio', methods=['POST'])
 def optimize_portfolio():
     tickers = request.json.get('tickers')
     total_portfolio_value = request.json.get('total_portfolio_value')
     
-    prices = download_prices(tickers)
-    weights, _ = optimize_min_volatility(prices)
-    allocations, leftover = perform_discrete_allocation(weights, prices, total_portfolio_value=total_portfolio_value)
     
+    response={}
+
+    prices, errors = download_prices(tickers)
+
+    valid_tickers = [ticker for ticker in tickers if ticker not in errors]
+    if valid_tickers:
+        valid_prices = prices[valid_tickers]
+        weights, _ = optimize_min_volatility(valid_prices)
+        allocations, leftover = perform_discrete_allocation(weights, valid_prices, total_portfolio_value=total_portfolio_value)
+    else:
+        weights, allocations, leftover = {}, {}, 0
+
     response = {
         "weights": weights,
         "allocations": allocations,
-        "leftover": leftover
+        "leftover": leftover,
+        "errors": errors
     }
     return jsonify(response)
 
@@ -63,20 +75,34 @@ def optimize_portfolio():
 def optimize_min_volatility_endpoint():
     tickers = request.json.get('tickers')
     total_portfolio_value = request.json.get('total_portfolio_value')
-    
-    prices = download_prices(tickers)
-    weights, performance_data = optimize_min_volatility(prices)
-    allocations, leftover = perform_discrete_allocation(weights, prices, total_portfolio_value=total_portfolio_value)
-    performance_data = performance_data['MVO']
-    performance_data = {key: value if not isnan(value) else None for key, value in performance_data.items()}
+
+    prices, valid_tickers, errors = download_prices(tickers)
+#    valid_tickers = [ticker for ticker in tickers if ticker not in errors]
+    response={}
+    if valid_tickers:
+        valid_prices = prices[valid_tickers]
+        weights, performance_data = optimize_min_volatility(valid_prices)
+        
+        # Ensure weights only contain valid tickers
+        weights = {ticker: weight for ticker, weight in weights.items() if ticker in valid_tickers}
+        
+        allocations, leftover = perform_discrete_allocation(weights, valid_prices, total_portfolio_value=total_portfolio_value)
+        
+        performance_data = performance_data['MVO']
+        performance_data = {key: value if not isnan(value) else None for key, value in performance_data.items()}
+    else:
+        weights, allocations, leftover, performance_data = {}, {}, 0, {}
+
+
     response = {
         "weights": weights,
         "allocations": allocations,
         "leftover": leftover,
-        "performance": performance_data
- 
+        "performance": performance_data,
+        "errors": errors
     }
-    print(performance_data)
+    
+
     return jsonify(response)
 
 @app.route('/max_sharpe_with_sector_constraints', methods=['POST'])
@@ -84,17 +110,23 @@ def max_sharpe_with_sector_constraints_endpoint():
     tickers = request.json.get('tickers')
     total_portfolio_value = request.json.get('total_portfolio_value', 10000)
     
-    prices = download_prices(tickers)
-    weights, performance_data = max_sharpe_with_sector_constraints(prices, sector_mapper, sector_lower, sector_upper)
-    allocations, leftover = perform_discrete_allocation(weights, prices, total_portfolio_value=total_portfolio_value)
-    performance_data = performance_data['MVO']
-    performance_data = {key: value if not isnan(value) else None for key, value in performance_data.items()}
+    prices, valid_tickers, errors = download_prices(tickers)
+    
+    if valid_tickers:
+        valid_prices = prices[valid_tickers]
+        weights, performance_data = max_sharpe_with_sector_constraints(valid_prices, sector_mapper, sector_lower, sector_upper)
+        allocations, leftover = perform_discrete_allocation(weights, valid_prices, total_portfolio_value=total_portfolio_value)
+        performance_data = performance_data['MVO']
+        performance_data = {key: value if not isnan(value) else None for key, value in performance_data.items()}
+    else:
+        weights, allocations, leftover, performance_data = {}, {}, 0, {}
 
     response = {
         "weights": weights,
         "allocations": allocations,
         "leftover": leftover,
-        "performance": performance_data
+        "performance": performance_data,
+        "errors": errors
     }
     return jsonify(response)
 
@@ -103,17 +135,24 @@ def maximize_return_given_risk_endpoint():
     tickers = request.json.get('tickers')
     target_volatility = request.json.get('target_volatility')
     total_portfolio_value = request.json.get('total_portfolio_value', 10000)
-    prices = download_prices(tickers)
-    weights, performance_data = maximize_return_given_risk(prices, target_volatility)
-    allocations, leftover = perform_discrete_allocation(weights, prices, total_portfolio_value=total_portfolio_value)
-    performance_data = performance_data['MVO']
-    performance_data = {key: value if not isnan(value) else None for key, value in performance_data.items()}
+
+    prices, valid_tickers, errors = download_prices(tickers)
+    
+    if valid_tickers:
+        valid_prices = prices[valid_tickers]
+        weights, performance_data = maximize_return_given_risk(valid_prices, target_volatility)
+        allocations, leftover = perform_discrete_allocation(weights, valid_prices, total_portfolio_value=total_portfolio_value)
+        performance_data = performance_data['MVO']
+        performance_data = {key: value if not isnan(value) else None for key, value in performance_data.items()}
+    else:
+        weights, allocations, leftover, performance_data = {}, {}, 0, {}
 
     response = {
         "weights": weights,
         "allocations": allocations,
         "leftover": leftover,
-        "performance": performance_data
+        "performance": performance_data,
+        "errors": errors
     }
     return jsonify(response)
 
@@ -123,17 +162,23 @@ def minimize_risk_given_return_endpoint():
     target_return = request.json.get('target_return')
     total_portfolio_value = request.json.get('total_portfolio_value', 10000)
 
-    prices = download_prices(tickers)
-    weights, performance_data = minimize_risk_given_return(prices, target_return)
-    allocations, leftover = perform_discrete_allocation(weights, prices, total_portfolio_value=total_portfolio_value)
-    performance_data = performance_data['MVO']
-    performance_data = {key: value if not isnan(value) else None for key, value in performance_data.items()}
+    prices, valid_tickers, errors = download_prices(tickers)
+    
+    if valid_tickers:
+        valid_prices = prices[valid_tickers]
+        weights, performance_data = minimize_risk_given_return(valid_prices, target_return)
+        allocations, leftover = perform_discrete_allocation(weights, valid_prices, total_portfolio_value=total_portfolio_value)
+        performance_data = performance_data['MVO']
+        performance_data = {key: value if not isnan(value) else None for key, value in performance_data.items()}
+    else:
+        weights, allocations, leftover, performance_data = {}, {}, 0, {}
 
     response = {
         "weights": weights,
         "allocations": allocations,
         "leftover": leftover,
-        "performance":performance_data
+        "performance": performance_data,
+        "errors": errors
     }
     return jsonify(response)
 
@@ -143,19 +188,24 @@ def efficient_semivariance_endpoint():
     target_return = request.json.get('target_return')
     total_portfolio_value = request.json.get('total_portfolio_value', 10000)
     
-    prices = download_prices(tickers)
-    mu = get_expected_returns(prices)
-
-    weights, performance_data = efficient_semivariance(prices,mu,  benchmark=target_return)
-    allocations, leftover = perform_discrete_allocation(weights, prices, total_portfolio_value=total_portfolio_value)
-    performance_data = performance_data['MVO']
-    performance_data = {key: value if not isnan(value) else None for key, value in performance_data.items()}
+    prices, valid_tickers, errors = download_prices(tickers)
+    
+    if valid_tickers:
+        valid_prices = prices[valid_tickers]
+        mu = get_expected_returns(valid_prices)
+        weights, performance_data = efficient_semivariance(valid_prices, mu, benchmark=target_return)
+        allocations, leftover = perform_discrete_allocation(weights, valid_prices, total_portfolio_value=total_portfolio_value)
+        performance_data = performance_data['MVO']
+        performance_data = {key: value if not isnan(value) else None for key, value in performance_data.items()}
+    else:
+        weights, allocations, leftover, performance_data = {}, {}, 0, {}
 
     response = {
         "weights": weights,
         "allocations": allocations,
         "leftover": leftover,
-        "performance":performance_data
+        "performance": performance_data,
+        "errors": errors
     }
     return jsonify(response)
 
@@ -165,19 +215,24 @@ def efficient_cvar_endpoint():
     target_cvar = request.json.get('target_cvar')
     total_portfolio_value = request.json.get('total_portfolio_value', 10000)
    
-    prices = download_prices(tickers)
-    mu = get_expected_returns(prices)
-
-    weights, performance_data = efficient_cvar(prices,mu,  target_cvar=target_cvar)
-    allocations, leftover = perform_discrete_allocation(weights, prices,  total_portfolio_value=total_portfolio_value)
-    performance_data = performance_data['MVO']
-    performance_data = {key: value if not isnan(value) else None for key, value in performance_data.items()}
+    prices, valid_tickers, errors = download_prices(tickers)
+    
+    if valid_tickers:
+        valid_prices = prices[valid_tickers]
+        mu = get_expected_returns(valid_prices)
+        weights, performance_data = efficient_cvar(valid_prices, mu, target_cvar=target_cvar)
+        allocations, leftover = perform_discrete_allocation(weights, valid_prices, total_portfolio_value=total_portfolio_value)
+        performance_data = performance_data['MVO']
+        performance_data = {key: value if not isnan(value) else None for key, value in performance_data.items()}
+    else:
+        weights, allocations, leftover, performance_data = {}, {}, 0, {}
 
     response = {
         "weights": weights,
         "allocations": allocations,
         "leftover": leftover,
-        "performance": performance_data
+        "performance": performance_data,
+        "errors": errors
     }
     return jsonify(response)
 
@@ -196,22 +251,29 @@ def optimize_hrp_endpoint():
     total_portfolio_value = request.json.get('total_portfolio_value', 10000)
     
     # Download historical prices
-    prices = download_prices(tickers)
-    
-    # Optimize portfolio using HRP
-    weights, performance_data = optimize_hrp(prices)
-    
-    # Perform discrete allocation
-    allocations, leftover = perform_discrete_allocation(weights, prices, total_portfolio_value=total_portfolio_value)
-    performance_data = performance_data['MVO']
-    performance_data = {key: value if not isnan(value) else None for key, value in performance_data.items()}
-    # Prepare response
+    prices, valid_tickers, errors = download_prices(tickers)
+        
+    if valid_tickers:
+        valid_prices = prices[valid_tickers]
+            
+            # Optimize portfolio using HRP
+        weights, performance_data = optimize_hrp(valid_prices)
+            
+            # Perform discrete allocation
+        allocations, leftover = perform_discrete_allocation(weights, valid_prices, total_portfolio_value=total_portfolio_value)
+        performance_data = performance_data['MVO']
+        performance_data = {key: value if not isnan(value) else None for key, value in performance_data.items()}
+    else:
+        weights, allocations, leftover, performance_data = {}, {}, 0, {}
+
+        # Prepare response
     response = {
-        "weights": weights,
-        "allocations": allocations,
-        "leftover": leftover,
-        "performance": performance_data
-    }
+            "weights": weights,
+            "allocations": allocations,
+            "leftover": leftover,
+            "performance": performance_data,
+            "errors": errors
+        }
     
     # Return response as JSON
     return jsonify(response)

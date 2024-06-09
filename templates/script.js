@@ -2,6 +2,7 @@ function displayAllocations(data) {
     const allocations = data.allocations;
     const leftover = data.leftover;
     const performance_data = data.performance;
+    const errors = data.errors;
 
     let allocationList = "";
     for (const [asset, allocation] of Object.entries(allocations)) {
@@ -31,6 +32,12 @@ function displayAllocations(data) {
         }
         // Add additional checks for other performance metrics here
     }
+    let errorText = '';
+    if (errors) {
+        for (const [ticker, error] of Object.entries(errors)) {
+            errorText += `<p class="text-danger">Error with ${ticker}: ${error}</p>`;
+        }
+    }
 
     const cardHTML = `
         <div class="card">
@@ -44,11 +51,31 @@ function displayAllocations(data) {
                 </ul>
                 <p class="card-text">Leftover: $${leftover.toFixed(2)}</p>
                 ${performanceText}
+                ${errorText}
             </div>
         </div>
+        <div id="donutChart"></div>
     `;
 
     document.getElementById("allocationsCard").innerHTML = cardHTML;
+        // Extract weights from the data
+        const weights = data.weights;
+        const labels = Object.keys(weights);
+        const series = Object.values(weights);
+    
+        // Generate the chart using ApexCharts
+        new ApexCharts(document.querySelector("#donutChart"), {
+            series: series,
+            chart: {
+                height: 350,
+                type: 'donut',
+                toolbar: {
+                    show: true
+                }
+            },
+            labels: labels,
+        }).render();
+    
 }
 
 
@@ -194,4 +221,18 @@ function optimizeHRP() {
         console.error("Error:", error);
     });
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    new ApexCharts(document.querySelector("#donutChart"), {
+      series: [44, 55, 13, 43, 22],
+      chart: {
+        height: 350,
+        type: 'donut',
+        toolbar: {
+          show: true
+        }
+      },
+      labels: ['Team A', 'Team B', 'Team C', 'Team D', 'Team E'],
+    }).render();
+  });
 
